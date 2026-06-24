@@ -687,6 +687,38 @@
     .compare-card.pred .cc-val { color: #4ade80; }
     .compare-card .cc-sub { font-size: .76rem; color: var(--text-muted); margin-top: 6px; }
     .diff-arrow { font-size: 1.8rem; text-align: center; }
+
+    /* ── Histórico ── */
+    .trend-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: .72rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .trend-up2   { background:rgba(16,185,129,.15); color:#4ade80; border:1px solid rgba(16,185,129,.3); }
+    .trend-down2 { background:rgba(239,68,68,.12); color:#f87171; border:1px solid rgba(239,68,68,.25); }
+    .trend-mixed { background:rgba(245,158,11,.12); color:#fbbf24; border:1px solid rgba(245,158,11,.25); }
+    .trend-new   { background:rgba(139,92,246,.15); color:#c4b5fd; border:1px solid rgba(139,92,246,.3); }
+    .trend-gone  { background:rgba(100,116,139,.15); color:#94a3b8; border:1px solid rgba(100,116,139,.25); }
+    .trend-stable{ background:rgba(51,65,85,.5); color:#94a3b8; border:1px solid var(--border); }
+
+    .delta-cell { font-size: .75rem; font-weight: 600; text-align:center; }
+    .delta-pos  { color: #4ade80; }
+    .delta-neg  { color: #f87171; }
+    .delta-zero { color: #94a3b8; }
+
+    .hist-mun-card {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .hist-mun-card .hmc-val { font-size: 1.4rem; font-weight: 700; letter-spacing: -.5px; }
+    .hist-mun-card .hmc-lbl { font-size: .7rem; color: var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+    .hist-mun-card .hmc-delta { font-size: .78rem; font-weight: 600; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -799,6 +831,121 @@
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SEÇÃO HISTÓRICA 2014 · 2018 · 2022
+  ══════════════════════════════════════════ -->
+
+  <div class="section-title" style="margin-top:12px;">📅 Evolução Histórica — 2014 · 2018 · 2022</div>
+
+  <!-- KPIs históricos -->
+  <div class="cards" style="margin-bottom:20px;">
+    <div class="card blue" style="border-top:3px solid #60a5fa;">
+      <span class="card-icon" style="font-size:18px;">🗳️ 2014</span>
+      <div class="card-value">48.374</div>
+      <div class="card-label">Total de votos</div>
+      <div class="card-sub">195 municípios · Eleições Gerais</div>
+    </div>
+    <div class="card" style="background:var(--surface); border:1px solid var(--border); border-top:3px solid #a78bfa;">
+      <span class="card-icon" style="font-size:18px;">🗳️ 2018</span>
+      <div class="card-value" style="color:#a78bfa;">47.175</div>
+      <div class="card-label">Total de votos</div>
+      <div class="card-sub" style="color:#ef4444;">▼ -1.199 votos (-2,5%) vs 2014</div>
+    </div>
+    <div class="card green" style="border-top:3px solid #4ade80;">
+      <span class="card-icon" style="font-size:18px;">🗳️ 2022</span>
+      <div class="card-value" style="color:#4ade80;">59.133</div>
+      <div class="card-label">Total de votos</div>
+      <div class="card-sub" style="color:#4ade80;">▲ +11.958 votos (+25,3%) vs 2018</div>
+    </div>
+    <div class="card amber">
+      <span class="card-icon">📈</span>
+      <div class="card-value">+22,2%</div>
+      <div class="card-label">Crescimento 2014→2022</div>
+      <div class="card-sub">+10.759 votos em 8 anos</div>
+    </div>
+    <div class="card purple">
+      <span class="card-icon">🏙️</span>
+      <div class="card-value">223</div>
+      <div class="card-label">Municípios únicos</div>
+      <div class="card-sub">presença nos 3 ciclos eleitorais</div>
+    </div>
+  </div>
+
+  <!-- Gráficos históricos: linha geral + barras top -->
+  <div class="grid2" style="margin-bottom:20px;">
+    <div class="panel">
+      <div class="panel-title">📈 Evolução do Total de Votos por Eleição</div>
+      <div class="chart-wrap" style="height:260px;">
+        <canvas id="chart-hist-line"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">🏆 Top 8 Municípios — Comparativo 3 Anos</div>
+      <div class="chart-wrap" style="height:260px;">
+        <canvas id="chart-hist-bar"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparador de município -->
+  <div class="panel" style="margin-bottom:20px;">
+    <div class="panel-title">🔍 Comparar Município ao Longo dos Anos</div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:20px;">
+      <input class="search-input" id="hist-search" type="text"
+             placeholder="Digite o município…"
+             autocomplete="off" style="max-width:300px;" />
+      <button class="btn-search" onclick="compararMunicipio()">Comparar</button>
+      <div class="suggest-list" id="hist-suggests" style="margin:0;"></div>
+    </div>
+    <div id="hist-result" style="display:none;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+        <div>
+          <div class="chart-wrap" style="height:240px;">
+            <canvas id="chart-mun-hist"></canvas>
+          </div>
+        </div>
+        <div id="hist-mun-cards" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela completa de tendências -->
+  <div class="table-panel" style="margin-bottom:24px;">
+    <div class="table-header">
+      <h3>📋 Tendência por Município — 2014 · 2018 · 2022</h3>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <select id="trend-filter" class="filter-input" onchange="filtrarTendencia()" style="width:160px;">
+          <option value="all">Todas tendências</option>
+          <option value="cresceu">Cresceu (ambos períodos)</option>
+          <option value="caiu">Caiu (ambos períodos)</option>
+          <option value="oscilou">Oscilou</option>
+          <option value="surgiu">Surgiu (0→votos)</option>
+        </select>
+        <input class="filter-input" id="hist-filter" type="text"
+               placeholder="Filtrar município…" oninput="filtrarTendencia()" />
+      </div>
+    </div>
+    <div class="scroll-table">
+      <table id="hist-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Município</th>
+            <th style="text-align:right">2014</th>
+            <th style="text-align:center">→</th>
+            <th style="text-align:right">2018</th>
+            <th style="text-align:center">→</th>
+            <th style="text-align:right">2022</th>
+            <th style="text-align:center">14→18</th>
+            <th style="text-align:center">18→22</th>
+            <th style="text-align:center">Tendência Geral</th>
+          </tr>
+        </thead>
+        <tbody id="hist-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -1235,6 +1382,260 @@ new Chart(document.getElementById('chart-donut'), {
     }
   }
 });
+
+/* ══════════════════════════════════════════
+   HISTORICAL ANALYSIS — 2014 · 2018 · 2022
+══════════════════════════════════════════ */
+
+const HIST = {"ACAUÃ":[0,1,3],"AGRICOLÂNDIA":[8,9,6],"ALAGOINHA DO PIAUÍ":[1036,644,645],"ALEGRETE DO PIAUÍ":[13,4,5],"ALTO LONGÁ":[111,42,71],"ALTOS":[433,64,88],"ALVORADA DO GURGUÉIA":[0,6,5],"AMARANTE":[19,13,20],"ANGICAL DO PIAUÍ":[13,43,3],"ANTÔNIO ALMEIDA":[41,6,0],"ANÍSIO DE ABREU":[6,0,0],"AROAZES":[10,8,226],"AROEIRAS DO ITAIM":[88,171,42],"ARRAIAL":[1,0,5],"ASSUNÇÃO DO PIAUÍ":[6,4,10],"AVELINO LOPES":[1022,677,512],"BAIXA GRANDE DO RIBEIRO":[1439,1860,1446],"BARRA D ALCÂNTARA":[8,17,11],"BARRAS":[15,50,687],"BARREIRAS DO PIAUÍ":[0,11,4],"BARRO DURO":[2,8,2],"BATALHA":[13,16,19],"BELA VISTA DO PIAUÍ":[0,1,4],"BELÉM DO PIAUÍ":[268,794,1002],"BENEDITINOS":[395,65,187],"BERTOLÍNIA":[2,10,9],"BETÂNIA DO PIAUÍ":[0,8,8],"BOA HORA":[4,14,9],"BOCAINA":[769,791,149],"BOM JESUS":[4,13,18],"BOM PRINCÍPIO DO PIAUÍ":[40,4,2],"BONFIM DO PIAUÍ":[1,1,0],"BOQUEIRÃO DO PIAUÍ":[3,6,3],"BRASILEIRA":[6,10,7],"BREJO DO PIAUÍ":[0,1,10],"BURITI DOS LOPES":[15,1,2],"BURITI DOS MONTES":[52,29,16],"CABECEIRAS DO PIAUÍ":[8,22,16],"CAJAZEIRAS DO PIAUÍ":[3,2,2],"CAJUEIRO DA PRAIA":[3,12,525],"CALDEIRÃO GRANDE DO PIAUÍ":[174,15,16],"CAMPINAS DO PIAUÍ":[5,1,10],"CAMPO ALEGRE DO FIDALGO":[3,0,0],"CAMPO GRANDE DO PIAUÍ":[16,60,96],"CAMPO LARGO DO PIAUÍ":[16,5,6],"CAMPO MAIOR":[194,335,337],"CANAVIEIRA":[6,3,1],"CANTO DO BURITI":[15,5,1017],"CAPITÃO DE CAMPOS":[2,4,4],"CAPITÃO GERVÁSIO OLIVEIRA":[1,0,1],"CARACOL":[0,104,5],"CARAÚBAS DO PIAUÍ":[0,24,2],"CARIDADE DO PIAUÍ":[2,12,18],"CASTELO DO PIAUÍ":[278,29,20],"CAXINGÓ":[2,3,7],"COCAL":[37,2009,34],"COCAL DE TELHA":[118,84,29],"COCAL DOS ALVES":[0,13,1],"COIVARAS":[21,9,15],"COLÔNIA DO GURGUÉIA":[8,5,6],"COLÔNIA DO PIAUÍ":[2,109,4],"CONCEIÇÃO DO CANINDÉ":[322,610,589],"CORRENTE":[6,8,5],"CRISTALÂNDIA DO PIAUÍ":[0,0,20],"CRISTINO CASTRO":[2,252,209],"CURIMATÁ":[14,11,166],"CURRAIS":[0,16,13],"CURRAL NOVO DO PIAUÍ":[1,2076,2962],"CURRALINHOS":[47,16,10],"DEMERVAL LOBÃO":[964,1744,1590],"DIRCEU ARCOVERDE":[9,2,0],"DOM EXPEDITO LOPES":[389,217,1202],"DOM INOCÊNCIO":[1,4,4],"DOMINGOS MOURÃO":[51,6,4],"ELESBÃO VELOSO":[30,17,31],"ELISEU MARTINS":[0,3,3],"ESPERANTINA":[15,17,16],"FARTURA DO PIAUÍ":[7,0,0],"FLORES DO PIAUÍ":[1,3,12],"FLORESTA DO PIAUÍ":[17,5,6],"FLORIANO":[24,79,72],"FRANCINÓPOLIS":[5,736,711],"FRANCISCO AYRES":[0,3,1],"FRANCISCO MACEDO":[15,3,5],"FRANCISCO SANTOS":[332,24,18],"FRONTEIRAS":[304,11,9],"GEMINIANO":[893,485,200],"GILBUÊS":[11,1,2],"GUADALUPE":[14,25,5],"GUARIBAS":[5,0,0],"HUGO NAPOLEÃO":[346,69,9],"ILHA GRANDE":[0,0,3],"INHUMA":[1441,764,885],"IPIRANGA DO PIAUÍ":[646,358,386],"ISAÍAS COELHO":[12,28,9],"ITAINÓPOLIS":[804,435,356],"ITAUEIRA":[6,964,1862],"JACOBINA DO PIAUÍ":[123,62,4],"JAICÓS":[268,107,108],"JARDIM DO MULATO":[45,0,7],"JATOBÁ DO PIAUÍ":[3,15,6],"JERUMENHA":[5,8,1],"JOAQUIM PIRES":[22,42,13],"JOCA MARQUES":[0,0,4],"JOSÉ DE FREITAS":[811,590,895],"JOÃO COSTA":[4,2,2],"JUAZEIRO DO PIAUÍ":[29,0,5],"JUREMA":[1,5,0],"JÚLIO BORGES":[894,639,798],"LAGOA ALEGRE":[24,12,24],"LAGOA DE SÃO FRANCISCO":[1,2,1],"LAGOA DO BARRO DO PIAUÍ":[4,4,1],"LAGOA DO PIAUÍ":[22,14,257],"LAGOA DO SÍTIO":[39,24,1676],"LAGOINHA DO PIAUÍ":[1,4,3],"LANDRI SALES":[4,5,2],"LUIS CORREIA":[1464,23,83],"LUZILÂNDIA":[0,2,8],"MADEIRO":[1,0,0],"MANOEL EMÍDIO":[2,100,196],"MARCOLÂNDIA":[369,450,322],"MARCOS PARENTE":[112,0,33],"MASSAPÊ DO PIAUÍ":[514,415,1777],"MATIAS OLÍMPIO":[3,5,3],"MIGUEL ALVES":[27,36,141],"MIGUEL LEÃO":[77,10,24],"MILTON BRANDÃO":[0,2,8],"MONSENHOR GIL":[26,5,60],"MONSENHOR HIPÓLITO":[770,792,578],"MONTE ALEGRE DO PIAUÍ":[1,2,3],"MORRO CABEÇA NO TEMPO":[305,221,165],"MORRO DO CHAPÉU DO PIAUÍ":[0,1,0],"MURICI DOS PORTELAS":[6,0,1],"NAZARÉ DO PIAUÍ":[170,224,375],"NAZÁRIA":[172,73,277],"NOSSA SENHORA DE NAZARÉ":[8,13,7],"NOSSA SENHORA DOS REMÉDIOS":[17,96,6],"NOVA SANTA RITA":[1,4,4],"NOVO ORIENTE DO PIAUÍ":[21,3,24],"NOVO SANTO ANTÔNIO":[100,120,6],"OEIRAS":[41,20,45],"OLHO D ÁGUA DO PIAUÍ":[0,2,0],"PADRE MARCOS":[25,29,39],"PAES LANDIM":[12,0,234],"PAJÉU DO PIAUÍ":[0,0,3],"PALMEIRA DO PIAUÍ":[0,19,2],"PALMEIRAIS":[26,20,131],"PAQUETÁ":[1047,1234,569],"PARNAGUÁ":[10,5,11],"PARNAÍBA":[88,62,179],"PASSAGEM FRANCA DO PIAUÍ":[3,5,2],"PATOS DO PIAUÍ":[311,19,267],"PAU D ARCO DO PIAUÍ":[18,49,8],"PAULISTANA":[74,99,157],"PAVUSSU":[4,5,5],"PEDRO II":[27,37,46],"PEDRO LAURENTINO":[4,3,3],"PICOS":[8351,7037,5881],"PIMENTEIRAS":[1633,596,384],"PIO IX":[164,381,342],"PIRACURUCA":[31,233,202],"PIRIPIRI":[177,305,409],"PORTO":[64,9,37],"PORTO ALEGRE DO PIAUÍ":[1,20,27],"PRATA DO PIAUÍ":[14,0,3],"QUEIMADA NOVA":[7,412,2],"REDENÇÃO DO GURGUÉIA":[0,1,279],"REGENERAÇÃO":[43,9,15],"RIACHO FRIO":[1,2,5],"RIBEIRA DO PIAUÍ":[2,2,1],"RIBEIRO GONÇALVES":[15,20,14],"RIO GRANDE DO PIAUÍ":[0,428,238],"SANTA CRUZ DO PIAUÍ":[324,37,31],"SANTA CRUZ DOS MILAGRES":[1,0,3],"SANTA FILOMENA":[195,202,185],"SANTA LUZ":[0,12,1],"SANTA ROSA DO PIAUÍ":[5,14,0],"SANTANA DO PIAUÍ":[858,484,1007],"SANTO ANTÔNIO DE LISBOA":[1012,383,366],"SANTO ANTÔNIO DOS MILAGRES":[1,0,0],"SANTO INÁCIO DO PIAUÍ":[6,4,4],"SEBASTIÃO BARROS":[2,0,0],"SEBASTIÃO LEAL":[2,0,2],"SIGEFREDO PACHECO":[32,159,668],"SIMPLÍCIO MENDES":[142,6,305],"SIMÕES":[73,111,79],"SOCORRO DO PIAUÍ":[4,0,0],"SUSSUAPARA":[922,458,1560],"SÃO BRAZ DO PIAUÍ":[1,0,0],"SÃO FRANCISCO DE ASSIS DO PIAUÍ":[2,11,98],"SÃO FRANCISCO DO PIAUÍ":[2,1,5],"SÃO FÉLIX DO PIAUÍ":[11,4,10],"SÃO GONÇALO DO GURGUÉIA":[2,0,0],"SÃO GONÇALO DO PIAUÍ":[12,9,12],"SÃO JOSÉ DO DIVINO":[1,2,3],"SÃO JOSÉ DO PEIXE":[1,398,1],"SÃO JOSÉ DO PIAUÍ":[1444,1178,1874],"SÃO JOÃO DA CANABRAVA":[1523,1666,2257],"SÃO JOÃO DA FRONTEIRA":[1,0,1],"SÃO JOÃO DA SERRA":[192,2,3],"SÃO JOÃO DA VARJOTA":[150,47,7],"SÃO JOÃO DO ARRAIAL":[0,9,1],"SÃO JOÃO DO PIAUÍ":[88,59,7],"SÃO JULIÃO":[373,90,1222],"SÃO LOURENÇO DO PIAUÍ":[0,1,1],"SÃO LUIS DO PIAUÍ":[242,136,207],"SÃO MIGUEL DA BAIXA GRANDE":[11,313,1],"SÃO MIGUEL DO FIDALGO":[3,49,117],"SÃO MIGUEL DO TAPUIO":[181,91,19],"SÃO PEDRO DO PIAUÍ":[481,300,318],"SÃO RAIMUNDO NONATO":[25,22,29],"TAMBORIL DO PIAUÍ":[0,0,131],"TANQUE DO PIAUÍ":[23,4,96],"TERESINA":[6609,7245,10916],"UNIÃO":[93,332,686],"URUÇUÍ":[13,16,30],"VALENÇA DO PIAUÍ":[310,152,247],"VERA MENDES":[16,8,11],"VILA NOVA DO PIAUÍ":[12,16,3],"VÁRZEA BRANCA":[0,1,1],"VÁRZEA GRANDE":[721,669,302],"WALL FERRAZ":[95,15,23],"ÁGUA BRANCA":[7,5,52]};
+
+const HIST_TOTALS = [48374, 47175, 59133];
+const HIST_ANOS   = ['2014','2018','2022'];
+
+// ── Classifica tendência ──
+function tendencia(v14, v18, v22) {
+  const d1 = v18 - v14;  // 14→18
+  const d2 = v22 - v18;  // 18→22
+  const dTotal = v22 - v14;
+  if (v14 === 0 && v22 > 0) return 'surgiu';
+  if (v14 > 0  && v22 === 0) return 'gone';
+  if (v14 === 0 && v22 === 0) return 'stable';
+  const pct = Math.abs(dTotal / v14);
+  if (d1 >= 0 && d2 >= 0) return 'cresceu';
+  if (d1 <= 0 && d2 <= 0) return 'caiu';
+  if (pct < 0.08) return 'stable';
+  return 'oscilou';
+}
+
+function trendBadge(t) {
+  const map = {
+    cresceu: ['trend-badge trend-up2',   '▲ Cresceu (ambos)'],
+    caiu:    ['trend-badge trend-down2', '▼ Caiu (ambos)'],
+    oscilou: ['trend-badge trend-mixed', '↕ Oscilou'],
+    surgiu:  ['trend-badge trend-new',   '★ Surgiu'],
+    gone:    ['trend-badge trend-gone',  '○ Saiu'],
+    stable:  ['trend-badge trend-stable','— Estável'],
+  };
+  const [cls, label] = map[t] || map.stable;
+  return `<span class="${cls}">${label}</span>`;
+}
+
+function pctDelta(a, b) {
+  if (a === 0 && b === 0) return { text: '—', cls: 'delta-zero' };
+  if (a === 0) return { text: '★ Novo', cls: 'delta-pos' };
+  if (b === 0) return { text: '○ Zerou', cls: 'delta-neg' };
+  const p = ((b - a) / a * 100);
+  const sign = p >= 0 ? '+' : '';
+  return { text: `${sign}${p.toFixed(0)}%`, cls: p > 0 ? 'delta-pos' : p < 0 ? 'delta-neg' : 'delta-zero' };
+}
+
+// ── Tabela histórica ──
+const histAll = Object.entries(HIST).sort((a, b) => b[1][2] - a[1][2]);
+
+function buildHistTable(rows) {
+  const tbody = document.getElementById('hist-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(([mun, v], idx) => {
+    const [v14, v18, v22] = v;
+    const t   = tendencia(v14, v18, v22);
+    const d1  = pctDelta(v14, v18);
+    const d2  = pctDelta(v18, v22);
+    tbody.innerHTML += `
+      <tr>
+        <td style="color:var(--text-muted);font-size:.74rem;">${idx+1}</td>
+        <td style="font-weight:500">${mun}</td>
+        <td style="text-align:right;color:#93c5fd;font-weight:500">${v14.toLocaleString('pt-BR')}</td>
+        <td class="delta-cell ${d1.cls}">${d1.text}</td>
+        <td style="text-align:right;color:#c4b5fd;font-weight:500">${v18.toLocaleString('pt-BR')}</td>
+        <td class="delta-cell ${d2.cls}">${d2.text}</td>
+        <td style="text-align:right;color:#4ade80;font-weight:600">${v22.toLocaleString('pt-BR')}</td>
+        <td style="text-align:center"><span class="delta-cell ${d1.cls}">${d1.text}</span></td>
+        <td style="text-align:center"><span class="delta-cell ${d2.cls}">${d2.text}</span></td>
+        <td style="text-align:center">${trendBadge(t)}</td>
+      </tr>`;
+  });
+}
+buildHistTable(histAll);
+
+function filtrarTendencia() {
+  const tf = document.getElementById('trend-filter').value;
+  const q  = document.getElementById('hist-filter').value.toUpperCase().trim();
+  let rows = histAll;
+  if (q) rows = rows.filter(([m]) => m.includes(q));
+  if (tf !== 'all') {
+    rows = rows.filter(([m, v]) => {
+      const t = tendencia(v[0], v[1], v[2]);
+      if (tf === 'cresceu') return t === 'cresceu';
+      if (tf === 'caiu')    return t === 'caiu';
+      if (tf === 'oscilou') return t === 'oscilou';
+      if (tf === 'surgiu')  return t === 'surgiu' || t === 'gone';
+      return true;
+    });
+  }
+  buildHistTable(rows);
+}
+
+// ── Gráfico linha — totais históricos ──
+new Chart(document.getElementById('chart-hist-line'), {
+  type: 'line',
+  data: {
+    labels: HIST_ANOS,
+    datasets: [{
+      label: 'Total de Votos',
+      data: HIST_TOTALS,
+      borderColor: '#f59e0b',
+      backgroundColor: 'rgba(245,158,11,.12)',
+      borderWidth: 3,
+      pointBackgroundColor: ['#60a5fa','#a78bfa','#4ade80'],
+      pointBorderColor: '#1e293b',
+      pointBorderWidth: 3,
+      pointRadius: 9,
+      pointHoverRadius: 12,
+      tension: 0.35,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.raw.toLocaleString('pt-BR')} votos`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(51,65,85,.5)' }, ticks: { color: '#cbd5e1', font: { size: 13, weight: '600' } } },
+      y: {
+        grid: { color: 'rgba(51,65,85,.4)' },
+        ticks: { color: '#94a3b8', callback: v => v.toLocaleString('pt-BR') },
+        min: 44000, max: 62000
+      }
+    }
+  }
+});
+
+// ── Gráfico barras agrupadas — top 8 municípios ──
+const TOP8 = ['TERESINA','PICOS','SÃO JOÃO DA CANABRAVA','SÃO JOSÉ DO PIAUÍ','DEMERVAL LOBÃO','CURRAL NOVO DO PIAUÍ','SUSSUAPARA','ITAUEIRA'];
+new Chart(document.getElementById('chart-hist-bar'), {
+  type: 'bar',
+  data: {
+    labels: TOP8.map(m => m.length > 14 ? m.substring(0,12)+'…' : m),
+    datasets: [
+      { label: '2014', data: TOP8.map(m => HIST[m]?.[0] || 0), backgroundColor: 'rgba(96,165,250,.75)', borderRadius: 4 },
+      { label: '2018', data: TOP8.map(m => HIST[m]?.[1] || 0), backgroundColor: 'rgba(196,181,253,.75)', borderRadius: 4 },
+      { label: '2022', data: TOP8.map(m => HIST[m]?.[2] || 0), backgroundColor: 'rgba(74,222,128,.8)',   borderRadius: 4 },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#94a3b8', font: { size: 11 }, usePointStyle: true, padding: 12 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-BR')} votos` } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+      y: { grid: { color: 'rgba(51,65,85,.4)' }, ticks: { color: '#94a3b8', callback: v => v.toLocaleString('pt-BR') } }
+    }
+  }
+});
+
+// ── Comparador de município ──
+let munHistChart = null;
+
+const HIST_QUICK = ['TERESINA','PICOS','PIRIPIRI','SUSSUAPARA','LAGOA DO SÍTIO','CANTO DO BURITI'];
+const histSugg = document.getElementById('hist-suggests');
+HIST_QUICK.forEach(m => {
+  const chip = document.createElement('span');
+  chip.className = 'suggest-chip';
+  chip.textContent = m;
+  chip.onclick = () => { document.getElementById('hist-search').value = m; compararMunicipio(); };
+  histSugg.appendChild(chip);
+});
+
+document.getElementById('hist-search').addEventListener('keydown', e => {
+  if (e.key === 'Enter') compararMunicipio();
+});
+
+function compararMunicipio() {
+  const q = document.getElementById('hist-search').value.toUpperCase().trim();
+  if (!q) return;
+  const match = Object.entries(HIST).find(([m]) => m === q) ||
+                Object.entries(HIST).find(([m]) => m.includes(q));
+  if (!match) return;
+
+  const [mun, v] = match;
+  const [v14, v18, v22] = v;
+  document.getElementById('hist-search').value = mun;
+  document.getElementById('hist-result').style.display = 'block';
+
+  // Cards
+  const d1 = pctDelta(v14, v18);
+  const d2 = pctDelta(v18, v22);
+  const dT = pctDelta(v14, v22);
+  const cards = document.getElementById('hist-mun-cards');
+  cards.innerHTML = `
+    <div class="hist-mun-card" style="border-left:3px solid #60a5fa; grid-column:1/-1">
+      <div style="font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:10px;">📍 ${mun}</div>
+      <div style="font-size:.75rem;color:var(--text-muted);">Tendência geral: ${trendBadge(tendencia(v14,v18,v22))}</div>
+    </div>
+    <div class="hist-mun-card" style="border-left:3px solid #60a5fa;">
+      <div class="hmc-val" style="color:#60a5fa">${v14.toLocaleString('pt-BR')}</div>
+      <div class="hmc-lbl">Votos em 2014</div>
+    </div>
+    <div class="hist-mun-card" style="border-left:3px solid #a78bfa;">
+      <div class="hmc-val" style="color:#a78bfa">${v18.toLocaleString('pt-BR')}</div>
+      <div class="hmc-lbl">Votos em 2018</div>
+      <div class="hmc-delta ${d1.cls}">vs 2014: ${d1.text}</div>
+    </div>
+    <div class="hist-mun-card" style="border-left:3px solid #4ade80;">
+      <div class="hmc-val" style="color:#4ade80">${v22.toLocaleString('pt-BR')}</div>
+      <div class="hmc-lbl">Votos em 2022</div>
+      <div class="hmc-delta ${d2.cls}">vs 2018: ${d2.text}</div>
+    </div>
+    <div class="hist-mun-card" style="border-left:3px solid var(--accent);">
+      <div class="hmc-val" style="color:var(--accent)">${dT.text}</div>
+      <div class="hmc-lbl">Variação total 2014→2022</div>
+      <div class="hmc-delta" style="color:var(--text-muted)">${v14} → ${v18} → ${v22}</div>
+    </div>`;
+
+  // Gráfico
+  if (munHistChart) munHistChart.destroy();
+  munHistChart = new Chart(document.getElementById('chart-mun-hist'), {
+    type: 'bar',
+    data: {
+      labels: HIST_ANOS,
+      datasets: [{
+        label: mun,
+        data: [v14, v18, v22],
+        backgroundColor: ['rgba(96,165,250,.8)','rgba(196,181,253,.8)','rgba(74,222,128,.85)'],
+        borderColor: ['#60a5fa','#a78bfa','#4ade80'],
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw.toLocaleString('pt-BR')} votos` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 14, weight: '700' } } },
+        y: {
+          grid: { color: 'rgba(51,65,85,.4)' },
+          ticks: { color: '#94a3b8', callback: v => v.toLocaleString('pt-BR') },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
 
 /* ══════════════════════════════════════════
    PREDICTIVE ANALYSIS LOGIC
