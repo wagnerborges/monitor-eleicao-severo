@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitor Eleitoral — Severo Eulalio Neto | Eleições 2022 PI</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #1a56db;
+      --primary-dark: #1e40af;
+      --accent: #f59e0b;
+      --accent-light: #fbbf24;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #263548;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --green: #10b981;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1a56db 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: rgba(245,158,11,.08);
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 30%;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(26,86,219,.15);
+    }
+    .header-badge {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--accent), #f97316);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 8px 24px rgba(245,158,11,.35);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .header-text { z-index: 1; }
+    .header-text h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      color: #fff;
+    }
+    .header-text p {
+      color: #93c5fd;
+      font-size: .85rem;
+      margin-top: 4px;
+      font-weight: 400;
+    }
+    .header-chip {
+      margin-left: auto;
+      z-index: 1;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: .75rem;
+      color: #bfdbfe;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ── LAYOUT ── */
+    main {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
+
+    /* ── CARDS ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.35); }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+    }
+    .card.blue::before   { background: linear-gradient(90deg, var(--primary), #60a5fa); }
+    .card.amber::before  { background: linear-gradient(90deg, var(--accent), #f97316); }
+    .card.green::before  { background: linear-gradient(90deg, var(--green), #34d399); }
+    .card.purple::before { background: linear-gradient(90deg, var(--purple), #a78bfa); }
+    .card.red::before    { background: linear-gradient(90deg, var(--red), #f87171); }
+
+    .card-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .card-value {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .card-label {
+      color: var(--text-muted);
+      font-size: .78rem;
+      margin-top: 6px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .card-sub {
+      font-size: .72rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── GRID 2 cols ── */
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+
+    /* ── CHART PANEL ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: .9rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chart-wrap {
+      position: relative;
+      height: 300px;
+    }
+
+    /* ── SEARCH ── */
+    .search-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .search-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 220px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,86,219,.2);
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .btn-search {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-search:hover { opacity: .9; transform: translateY(-1px); }
+
+    /* ── RESULT BOX ── */
+    #result-box {
+      margin-top: 20px;
+      display: none;
+    }
+    .result-mun {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+    }
+    .result-mun h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .result-metric {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 14px;
+      border-left: 3px solid var(--primary);
+    }
+    .result-metric .val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .result-metric .lbl {
+      font-size: .72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-top: 4px;
+    }
+    .bar-fill {
+      height: 8px;
+      background: var(--border);
+      border-radius: 99px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .bar-fill-inner {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width .6s ease;
+    }
+    .no-result {
+      color: var(--text-muted);
+      font-size: .9rem;
+      padding: 16px 0;
+    }
+    .suggest-list {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .suggest-chip {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: .78rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .suggest-chip:hover { border-color: var(--primary); color: var(--text); }
+
+    /* ── FULL TABLE ── */
+    .table-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .table-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .table-header h3 { font-size: .95rem; font-weight: 600; color: #cbd5e1; }
+    .filter-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--text);
+      font-size: .85rem;
+      outline: none;
+      width: 220px;
+      transition: border-color .2s;
+    }
+    .filter-input:focus { border-color: var(--primary); }
+    .filter-input::placeholder { color: var(--text-muted); }
+
+    .scroll-table { overflow-x: auto; max-height: 440px; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--surface2); position: sticky; top: 0; z-index: 2; }
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+    td {
+      padding: 11px 16px;
+      font-size: .85rem;
+      border-bottom: 1px solid rgba(51,65,85,.5);
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,.03); }
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      font-size: .75rem;
+      font-weight: 700;
+    }
+    .rank-1  { background: rgba(245,158,11,.2); color: var(--accent); }
+    .rank-2  { background: rgba(148,163,184,.15); color: #94a3b8; }
+    .rank-3  { background: rgba(249,115,22,.15); color: #f97316; }
+    .rank-n  { background: rgba(51,65,85,.5); color: var(--text-muted); }
+    .vote-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mini-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .mini-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--primary), #60a5fa);
+    }
+    .vote-num { font-weight: 600; color: var(--text); min-width: 58px; text-align: right; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: .75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ══════════════════════════════════════
+       PREDICTIVE ANALYSIS STYLES
+    ══════════════════════════════════════ */
+    .pred-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1a2a0a 60%, #14532d 100%);
+      border: 1px solid #166534;
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pred-header::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(16,185,129,.07);
+    }
+    .pred-header h2 { font-size: 1.3rem; font-weight: 700; color: #4ade80; margin-bottom: 8px; }
+    .pred-header p  { color: #86efac; font-size: .88rem; max-width: 760px; line-height: 1.6; }
+    .scenario-tag {
+      display: inline-block;
+      background: rgba(16,185,129,.15);
+      border: 1px solid #16a34a;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: .7rem;
+      color: #4ade80;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    /* Estimador flutuante */
+    .estimator-sticky {
+      position: sticky;
+      top: 10px;
+      z-index: 50;
+      background: linear-gradient(135deg, #052e16, #14532d);
+      border: 2px solid #16a34a;
+      border-radius: var(--radius);
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+    }
+    .est-block .est-label { font-size: .68rem; color: #86efac; text-transform: uppercase; letter-spacing: .8px; font-weight: 600; margin-bottom: 2px; }
+    .est-block .est-val   { font-size: 1.75rem; font-weight: 800; color: #4ade80; letter-spacing: -1px; line-height: 1; }
+    .est-block .est-sub   { font-size: .7rem; color: #4ade80; opacity: .7; margin-top: 2px; }
+    .est-divider { width: 1px; height: 48px; background: #166534; flex-shrink: 0; }
+    .est-delta-block .est-delta { font-size: 1.1rem; font-weight: 700; }
+    .est-delta.pos { color: #4ade80; }
+    .est-delta.neg { color: #f87171; }
+    .est-delta-block .est-breakdown { font-size: .72rem; color: #86efac; margin-top: 2px; }
+    .btn-reset {
+      margin-left: auto;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 8px 16px;
+      color: #cbd5e1;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .btn-reset:hover { background: rgba(255,255,255,.14); }
+
+    /* KPI cards preditivos */
+    .pred-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .pred-kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .pred-kpi.green { border-left: 4px solid var(--green); }
+    .pred-kpi.red   { border-left: 4px solid var(--red); }
+    .pred-kpi.amber { border-left: 4px solid var(--accent); }
+    .pred-kpi .pkv  { font-size: 1.6rem; font-weight: 700; color: var(--text); letter-spacing: -.5px; }
+    .pred-kpi .pkl  { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+    .pred-kpi .pks  { font-size: .72rem; color: var(--text-muted); margin-top: 6px; }
+
+    /* Painel conversão */
+    .conv-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .conv-panel-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: rgba(16,185,129,.05);
+    }
+    .conv-panel-header h3 { font-size: .92rem; font-weight: 600; color: #86efac; }
+    .global-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .global-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: .8rem;
+      color: var(--text-muted);
+    }
+    .global-slider-wrap input[type=range] { width: 80px; cursor: pointer; }
+    .global-slider-wrap .gsv { font-weight: 700; color: var(--green); min-width: 32px; }
+    .btn-apply {
+      background: rgba(16,185,129,.15);
+      border: 1px solid #16a34a;
+      border-radius: 8px;
+      padding: 6px 14px;
+      color: #4ade80;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-apply:hover { background: rgba(16,185,129,.28); }
+    .filter-conv {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 13px;
+      color: var(--text);
+      font-size: .82rem;
+      outline: none;
+      width: 190px;
+    }
+    .filter-conv::placeholder { color: var(--text-muted); }
+    .filter-conv:focus { border-color: var(--green); }
+    .conv-scroll { max-height: 460px; overflow-y: auto; }
+    table.conv-table { width: 100%; border-collapse: collapse; }
+    table.conv-table thead tr { background: var(--surface2); position: sticky; top: 0; z-index: 2; }
+    table.conv-table th {
+      padding: 10px 14px;
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    table.conv-table td { padding: 10px 14px; font-size: .82rem; border-bottom: 1px solid rgba(51,65,85,.4); vertical-align: middle; }
+    table.conv-table tr:last-child td { border-bottom: none; }
+    table.conv-table tbody tr:hover { background: rgba(255,255,255,.025); }
+
+    input.pct-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100px;
+      height: 5px;
+      border-radius: 99px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+    input.pct-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px; height: 15px;
+      border-radius: 50%;
+      background: var(--green);
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(16,185,129,.5);
+    }
+    .slider-cell { display: flex; align-items: center; gap: 8px; }
+    .pct-display { font-size: .82rem; font-weight: 700; color: var(--green); min-width: 38px; text-align: right; }
+    .gain-cell { font-size: .82rem; font-weight: 600; color: #4ade80; text-align: right; min-width: 70px; }
+    .gain-cell.neg { color: #f87171; }
+
+    /* Growth/reduction */
+    .growth-global-row {
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      background: rgba(139,92,246,.04);
+    }
+    .growth-global-label { font-size: .88rem; color: var(--text-muted); }
+    input.growth-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 180px;
+      height: 6px;
+      border-radius: 99px;
+      background: linear-gradient(90deg,#ef4444 0%,#334155 50%,#10b981 100%);
+      outline: none;
+      cursor: pointer;
+    }
+    input.growth-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.4);
+      border: 2px solid #475569;
+    }
+    .growth-val-display { font-size: 1rem; font-weight: 700; min-width: 60px; }
+    .growth-scroll { max-height: 380px; overflow-y: auto; }
+
+    input.growth-mun-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 90px;
+      height: 5px;
+      border-radius: 99px;
+      background: linear-gradient(90deg,#ef4444 0%,#334155 50%,#10b981 100%);
+      outline: none;
+      cursor: pointer;
+    }
+    input.growth-mun-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,.4);
+      border: 2px solid #475569;
+    }
+
+    /* Summary compare */
+    .summary-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .summary-compare {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      margin-top: 20px;
+      align-items: center;
+    }
+    @media(max-width:640px){ .summary-compare { grid-template-columns: 1fr; } }
+    .compare-card { border-radius: 10px; padding: 24px; text-align: center; }
+    .compare-card.base { background: rgba(26,86,219,.1); border: 1px solid rgba(26,86,219,.3); }
+    .compare-card.pred { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3); }
+    .compare-card .cc-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); margin-bottom: 8px; }
+    .compare-card .cc-val { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; }
+    .compare-card.base .cc-val { color: #60a5fa; }
+    .compare-card.pred .cc-val { color: #4ade80; }
+    .compare-card .cc-sub { font-size: .76rem; color: var(--text-muted); margin-top: 6px; }
+    .diff-arrow { font-size: 1.8rem; text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🗳️</div>
+  <div class="header-text">
+    <h1>Severo Maria Eulalio Neto</h1>
+    <p>Candidato a Deputado Estadual · Eleições Gerais 2022 · Piauí</p>
+  </div>
+  <div class="header-chip">
+    📅 02/10/2022<br>
+    🏷️ Nº 15101
+  </div>
+</header>
+
+<main>
+
+  <!-- ── CARDS ── -->
+  <div class="cards">
+    <div class="card blue">
+      <span class="card-icon">🗳️</span>
+      <div class="card-value" id="c-total">59.133</div>
+      <div class="card-label">Total de Votos</div>
+      <div class="card-sub">1º turno · cargo 7 (Dep. Estadual)</div>
+    </div>
+    <div class="card amber">
+      <span class="card-icon">🏙️</span>
+      <div class="card-value">206</div>
+      <div class="card-label">Municípios com votos</div>
+      <div class="card-sub">de 224 municípios do Piauí</div>
+    </div>
+    <div class="card green">
+      <span class="card-icon">📍</span>
+      <div class="card-value">5.139</div>
+      <div class="card-label">Seções com votos</div>
+      <div class="card-sub">Total de registros no arquivo</div>
+    </div>
+    <div class="card purple">
+      <span class="card-icon">📊</span>
+      <div class="card-value">287</div>
+      <div class="card-label">Média por município</div>
+      <div class="card-sub">votos / município</div>
+    </div>
+    <div class="card amber">
+      <span class="card-icon">🥇</span>
+      <div class="card-value">10.916</div>
+      <div class="card-label">Maior votação</div>
+      <div class="card-sub">Teresina (18,5% do total)</div>
+    </div>
+  </div>
+
+  <!-- ── CHARTS ── -->
+  <div class="section-title">📈 Distribuição de Votos</div>
+  <div class="grid2" style="margin-bottom:24px;">
+    <div class="panel">
+      <div class="panel-title">🏆 Top 10 Municípios — Mais Votados</div>
+      <div class="chart-wrap">
+        <canvas id="chart-top10"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">📉 10 Municípios — Menos Votados</div>
+      <div class="chart-wrap">
+        <canvas id="chart-bottom10"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:24px;">
+    <div class="panel-title">🌍 Concentração por Faixa de Votos</div>
+    <div class="chart-wrap" style="height:260px;">
+      <canvas id="chart-donut"></canvas>
+    </div>
+  </div>
+
+  <!-- ── SEARCH ── -->
+  <div class="section-title">🔍 Pesquisar Município</div>
+  <div class="search-panel">
+    <div class="panel-title" style="margin-bottom:14px;">Digite o nome de um município do Piauí para ver o desempenho do candidato</div>
+    <div class="search-row">
+      <input class="search-input" id="search-input" type="text"
+             placeholder="Ex: Teresina, Picos, Piripiri…"
+             autocomplete="off" />
+      <button class="btn-search" onclick="pesquisar()">Pesquisar</button>
+    </div>
+    <div class="suggest-list" id="suggests"></div>
+
+    <div id="result-box">
+      <div class="result-mun" id="result-content"></div>
+    </div>
+  </div>
+
+  <!-- ── FULL TABLE ── -->
+  <div class="section-title">📋 Todos os Municípios</div>
+  <div class="table-panel">
+    <div class="table-header">
+      <h3>Resultado completo por município</h3>
+      <input class="filter-input" id="filter-input" type="text"
+             placeholder="Filtrar município…" oninput="filtrarTabela()" />
+    </div>
+    <div class="scroll-table">
+      <table id="main-table">
+        <thead>
+          <tr>
+            <th style="width:50px">#</th>
+            <th>Município</th>
+            <th style="width:180px">Votos</th>
+            <th style="width:100px; text-align:right">% do total</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SEÇÃO DE ANÁLISE PREDITIVA
+  ══════════════════════════════════════════ -->
+
+  <div class="section-title" style="margin-top:12px;">🔮 Análise Preditiva — Simulação Eleitoral</div>
+
+  <!-- Cabeçalho do cenário -->
+  <div class="pred-header">
+    <span class="scenario-tag">🧪 Simulação · Cenário 2026</span>
+    <h2>E se Wilson Nunes Brandão não concorrer?</h2>
+    <p>
+      Wilson Nunes Brandão obteve <strong style="color:#4ade80">50.421 votos</strong> nas Eleições de 2022,
+      vencendo Severo em <strong style="color:#fbbf24">78 municípios</strong>.
+      Simule abaixo qual percentual dos votos de Wilson em cada município pode ser convertido para Severo,
+      e configure o crescimento ou redução de votos nos demais municípios para estimar o total final.
+    </p>
+  </div>
+
+  <!-- Estimador flutuante (sticky) -->
+  <div class="estimator-sticky">
+    <div class="est-block">
+      <div class="est-label">Votos base (2022)</div>
+      <div class="est-val">59.133</div>
+      <div class="est-sub">resultado real de Severo</div>
+    </div>
+    <div class="est-divider"></div>
+    <div class="est-block">
+      <div class="est-label">Total estimado</div>
+      <div class="est-val" id="est-total">59.133</div>
+      <div class="est-sub" id="est-sub-text">ajuste os sliders abaixo</div>
+    </div>
+    <div class="est-divider"></div>
+    <div class="est-delta-block">
+      <div class="est-label">Variação</div>
+      <div class="est-delta pos" id="est-delta">+0 votos</div>
+      <div class="est-breakdown" id="est-breakdown">conversão: +0 · crescimento: +0</div>
+    </div>
+    <button class="btn-reset" onclick="resetarTudo()">↺ Resetar tudo</button>
+  </div>
+
+  <!-- KPIs do cenário -->
+  <div class="pred-kpis">
+    <div class="pred-kpi amber">
+      <div class="pkv">50.421</div>
+      <div class="pkl">Votos de Wilson (2022)</div>
+      <div class="pks">Total obtido pelo candidato em 158 municípios</div>
+    </div>
+    <div class="pred-kpi red">
+      <div class="pkv">78</div>
+      <div class="pkl">Municípios onde Wilson venceu</div>
+      <div class="pks">Severo obteve menos votos nestes locais</div>
+    </div>
+    <div class="pred-kpi green">
+      <div class="pkv" id="kpi-pot">37.528</div>
+      <div class="pkl">Votos potenciais em jogo</div>
+      <div class="pks">Total de Wilson nos 78 municípios que Severo perdeu</div>
+    </div>
+    <div class="pred-kpi amber">
+      <div class="pkv">206</div>
+      <div class="pkl">Municípios de Severo</div>
+      <div class="pks">Crescimento/redução configurável individualmente</div>
+    </div>
+  </div>
+
+  <!-- PARTE 1: Municípios onde Wilson ganhou de Severo -->
+  <div class="conv-panel">
+    <div class="conv-panel-header">
+      <h3>🔄 Conversão de Votos — Wilson → Severo (78 municípios onde Wilson ganhou)</h3>
+      <div class="global-controls">
+        <input class="filter-conv" id="conv-filter" type="text" placeholder="Filtrar município…" oninput="filtrarConv()" />
+        <div class="global-slider-wrap">
+          <span>Global:</span>
+          <input type="range" min="0" max="100" value="0" id="global-conv-slider" oninput="aplicarGlobalConv(this.value)" />
+          <span class="gsv" id="global-conv-val">0%</span>
+        </div>
+        <button class="btn-apply" onclick="aplicarGlobalConv(document.getElementById('global-conv-slider').value)">Aplicar a todos</button>
+      </div>
+    </div>
+    <div class="conv-scroll">
+      <table class="conv-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Município</th>
+            <th>Votos Wilson</th>
+            <th>Votos Severo</th>
+            <th>Diferença</th>
+            <th style="min-width:170px">% Conversão</th>
+            <th style="text-align:right">Ganho estimado</th>
+          </tr>
+        </thead>
+        <tbody id="conv-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PARTE 2: Configuração de crescimento/redução para OUTROS municípios -->
+  <div class="growth-panel conv-panel">
+    <div class="conv-panel-header" style="background:rgba(139,92,246,.05); border-color:#4c1d95;">
+      <h3 style="color:#c4b5fd;">📈 Crescimento / Redução nos Demais Municípios (Severo já vencia)</h3>
+      <div class="global-controls">
+        <input class="filter-conv" id="growth-filter" type="text" placeholder="Filtrar município…" oninput="filtrarGrowth()" style="border-color:#4c1d95;" />
+        <div class="global-slider-wrap" style="border-color:#4c1d95;">
+          <span>Global:</span>
+          <input type="range" min="-100" max="200" value="0" id="global-growth-slider" oninput="aplicarGlobalGrowth(this.value)" />
+          <span class="gsv" id="global-growth-val" style="color:#c4b5fd;">0%</span>
+        </div>
+        <button class="btn-apply" onclick="aplicarGlobalGrowth(document.getElementById('global-growth-slider').value)" style="border-color:#4c1d95; color:#c4b5fd; background:rgba(139,92,246,.12);">Aplicar a todos</button>
+      </div>
+    </div>
+    <div class="growth-scroll">
+      <table class="conv-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Município</th>
+            <th>Votos Severo (2022)</th>
+            <th>Votos Wilson (2022)</th>
+            <th style="min-width:190px">% Variação</th>
+            <th style="text-align:right">Votos estimados</th>
+          </tr>
+        </thead>
+        <tbody id="growth-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PARTE 3: Resumo comparativo -->
+  <div class="summary-panel">
+    <div class="panel-title">📊 Resumo Comparativo — Real 2022 vs. Projeção</div>
+    <div class="summary-compare">
+      <div class="compare-card base">
+        <div class="cc-label">Resultado Real — Eleições 2022</div>
+        <div class="cc-val">59.133</div>
+        <div class="cc-sub">votos obtidos por Severo em 206 municípios</div>
+      </div>
+      <div class="diff-arrow" id="diff-arrow">➡️</div>
+      <div class="compare-card pred">
+        <div class="cc-label">Projeção com Simulação</div>
+        <div class="cc-val" id="summary-total">59.133</div>
+        <div class="cc-sub" id="summary-sub">nenhum ajuste aplicado</div>
+      </div>
+    </div>
+    <div style="margin-top:20px; background:var(--surface2); border-radius:10px; padding:16px 20px;">
+      <div style="font-size:.8rem; color:var(--text-muted); margin-bottom:12px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Detalhamento da projeção</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;" id="summary-detail">
+        <div style="background:var(--surface); border-radius:8px; padding:12px 16px; border-left:3px solid var(--primary);">
+          <div style="font-size:1.1rem; font-weight:700; color:var(--text)" id="sd-base">59.133</div>
+          <div style="font-size:.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:3px;">Votos base Severo</div>
+        </div>
+        <div style="background:var(--surface); border-radius:8px; padding:12px 16px; border-left:3px solid var(--green);">
+          <div style="font-size:1.1rem; font-weight:700; color:#4ade80" id="sd-conv">+0</div>
+          <div style="font-size:.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:3px;">Votos convertidos de Wilson</div>
+        </div>
+        <div style="background:var(--surface); border-radius:8px; padding:12px 16px; border-left:3px solid var(--purple);">
+          <div style="font-size:1.1rem; font-weight:700; color:#c4b5fd" id="sd-growth">+0</div>
+          <div style="font-size:.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:3px;">Variação por crescimento/redução</div>
+        </div>
+        <div style="background:var(--surface); border-radius:8px; padding:12px 16px; border-left:3px solid var(--accent);">
+          <div style="font-size:1.1rem; font-weight:700; color:var(--accent)" id="sd-total">59.133</div>
+          <div style="font-size:.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:3px;">Total projetado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Fonte: Tribunal Superior Eleitoral (TSE) · Eleições Gerais 2022 · Piauí · Gerado por Claude Code
+</footer>
+
+<script>
+/* ─── DATA ─── */
+const ALL_MUN = {"TERESINA":10916,"PICOS":5881,"CURRAL NOVO DO PIAUÍ":2962,"SÃO JOÃO DA CANABRAVA":2257,"SÃO JOSÉ DO PIAUÍ":1874,"ITAUEIRA":1862,"MASSAPÊ DO PIAUÍ":1777,"LAGOA DO SÍTIO":1676,"DEMERVAL LOBÃO":1590,"SUSSUAPARA":1560,"BAIXA GRANDE DO RIBEIRO":1446,"SÃO JULIÃO":1222,"DOM EXPEDITO LOPES":1202,"CANTO DO BURITI":1017,"SANTANA DO PIAUÍ":1007,"BELÉM DO PIAUÍ":1002,"JOSÉ DE FREITAS":895,"INHUMA":885,"JÚLIO BORGES":798,"FRANCINÓPOLIS":711,"BARRAS":687,"UNIÃO":686,"SIGEFREDO PACHECO":668,"ALAGOINHA DO PIAUÍ":645,"CONCEIÇÃO DO CANINDÉ":589,"MONSENHOR HIPÓLITO":578,"PAQUETÁ":569,"CAJUEIRO DA PRAIA":525,"AVELINO LOPES":512,"PIRIPIRI":409,"IPIRANGA DO PIAUÍ":386,"PIMENTEIRAS":384,"NAZARÉ DO PIAUÍ":375,"SANTO ANTÔNIO DE LISBOA":366,"ITAINÓPOLIS":356,"PIO IX":342,"CAMPO MAIOR":337,"MARCOLÂNDIA":322,"SÃO PEDRO DO PIAUÍ":318,"SIMPLÍCIO MENDES":305,"VÁRZEA GRANDE":302,"REDENÇÃO DO GURGUÉIA":279,"NAZÁRIA":277,"PATOS DO PIAUÍ":267,"LAGOA DO PIAUÍ":257,"VALENÇA DO PIAUÍ":247,"RIO GRANDE DO PIAUÍ":238,"PAES LANDIM":234,"AROAZES":226,"CRISTINO CASTRO":209,"SÃO LUIS DO PIAUÍ":207,"PIRACURUCA":202,"GEMINIANO":200,"MANOEL EMÍDIO":196,"BENEDITINOS":187,"SANTA FILOMENA":185,"PARNAÍBA":179,"CURIMATÁ":166,"MORRO CABEÇA NO TEMPO":165,"PAULISTANA":157,"BOCAINA":149,"MIGUEL ALVES":141,"PALMEIRAIS":131,"TAMBORIL DO PIAUÍ":131,"SÃO MIGUEL DO FIDALGO":117,"JAICÓS":108,"SÃO FRANCISCO DE ASSIS DO PIAUÍ":98,"CAMPO GRANDE DO PIAUÍ":96,"TANQUE DO PIAUÍ":96,"ALTOS":88,"LUIS CORREIA":83,"SIMÕES":79,"FLORIANO":72,"ALTO LONGÁ":71,"MONSENHOR GIL":60,"ÁGUA BRANCA":52,"PEDRO II":46,"OEIRAS":45,"AROEIRAS DO ITAIM":42,"PADRE MARCOS":39,"PORTO":37,"COCAL":34,"MARCOS PARENTE":33,"ELESBÃO VELOSO":31,"SANTA CRUZ DO PIAUÍ":31,"URUÇUÍ":30,"COCAL DE TELHA":29,"SÃO RAIMUNDO NONATO":29,"PORTO ALEGRE DO PIAUÍ":27,"MIGUEL LEÃO":24,"LAGOA ALEGRE":24,"NOVO ORIENTE DO PIAUÍ":24,"WALL FERRAZ":23,"AMARANTE":20,"CASTELO DO PIAUÍ":20,"CRISTALÂNDIA DO PIAUÍ":20,"SÃO MIGUEL DO TAPUIO":19,"BATALHA":19,"CARIDADE DO PIAUÍ":18,"FRANCISCO SANTOS":18,"BOM JESUS":18,"ESPERANTINA":16,"CALDEIRÃO GRANDE DO PIAUÍ":16,"BURITI DOS MONTES":16,"CABECEIRAS DO PIAUÍ":16,"REGENERAÇÃO":15,"COIVARAS":15,"RIBEIRO GONÇALVES":14,"CURRAIS":13,"JOAQUIM PIRES":13,"SÃO GONÇALO DO PIAUÍ":12,"FLORES DO PIAUÍ":12,"VERA MENDES":11,"BARRA D ALCÂNTARA":11,"PARNAGUÁ":11,"CURRALINHOS":10,"CAMPINAS DO PIAUÍ":10,"BREJO DO PIAUÍ":10,"ASSUNÇÃO DO PIAUÍ":10,"SÃO FÉLIX DO PIAUÍ":10,"HUGO NAPOLEÃO":9,"ISAÍAS COELHO":9,"BOA HORA":9,"BERTOLÍNIA":9,"FRONTEIRAS":9,"LUZILÂNDIA":8,"BETÂNIA DO PIAUÍ":8,"PAU D ARCO DO PIAUÍ":8,"MILTON BRANDÃO":8,"CAXINGÓ":7,"JARDIM DO MULATO":7,"NOSSA SENHORA DE NAZARÉ":7,"BRASILEIRA":7,"SÃO JOÃO DO PIAUÍ":7,"SÃO JOÃO DA VARJOTA":7,"CAMPO LARGO DO PIAUÍ":6,"NOSSA SENHORA DOS REMÉDIOS":6,"FLORESTA DO PIAUÍ":6,"AGRICOLÂNDIA":6,"COLÔNIA DO GURGUÉIA":6,"JATOBÁ DO PIAUÍ":6,"NOVO SANTO ANTÔNIO":6,"GUADALUPE":5,"ALVORADA DO GURGUÉIA":5,"CARACOL":5,"ALEGRETE DO PIAUÍ":5,"CORRENTE":5,"SÃO FRANCISCO DO PIAUÍ":5,"JUAZEIRO DO PIAUÍ":5,"ARRAIAL":5,"PAVUSSU":5,"FRANCISCO MACEDO":5,"RIACHO FRIO":5,"CAPITÃO DE CAMPOS":4,"JACOBINA DO PIAUÍ":4,"BELA VISTA DO PIAUÍ":4,"BARREIRAS DO PIAUÍ":4,"DOMINGOS MOURÃO":4,"SANTO INÁCIO DO PIAUÍ":4,"NOVA SANTA RITA":4,"JOCA MARQUES":4,"COLÔNIA DO PIAUÍ":4,"DOM INOCÊNCIO":4,"SÃO JOÃO DA SERRA":3,"SANTA CRUZ DOS MILAGRES":3,"PRATA DO PIAUÍ":3,"MATIAS OLÍMPIO":3,"VILA NOVA DO PIAUÍ":3,"ACAUÃ":3,"PEDRO LAURENTINO":3,"MONTE ALEGRE DO PIAUÍ":3,"ILHA GRANDE":3,"SÃO JOSÉ DO DIVINO":3,"LAGOINHA DO PIAUÍ":3,"BOQUEIRÃO DO PIAUÍ":3,"ELISEU MARTINS":3,"ANGICAL DO PIAUÍ":3,"PAJÉU DO PIAUÍ":3,"PALMEIRA DO PIAUÍ":2,"CARAÚBAS DO PIAUÍ":2,"BURITI DOS LOPES":2,"JOÃO COSTA":2,"SEBASTIÃO LEAL":2,"PASSAGEM FRANCA DO PIAUÍ":2,"QUEIMADA NOVA":2,"LANDRI SALES":2,"CAJAZEIRAS DO PIAUÍ":2,"BARRO DURO":2,"BOM PRINCÍPIO DO PIAUÍ":2,"GILBUÊS":2,"CAPITÃO GERVÁSIO OLIVEIRA":1,"LAGOA DO BARRO DO PIAUÍ":1,"SÃO JOÃO DO ARRAIAL":1,"CANAVIEIRA":1,"SÃO LOURENÇO DO PIAUÍ":1,"LAGOA DE SÃO FRANCISCO":1,"JERUMENHA":1,"SÃO MIGUEL DA BAIXA GRANDE":1,"MURICI DOS PORTELAS":1,"RIBEIRA DO PIAUÍ":1,"SÃO JOÃO DA FRONTEIRA":1,"SÃO JOSÉ DO PEIXE":1,"VÁRZEA BRANCA":1,"SANTA LUZ":1,"COCAL DOS ALVES":1,"FRANCISCO AYRES":1};
+
+const TOTAL_VOTOS = 59133;
+const SORTED = Object.entries(ALL_MUN); // already sorted desc
+const MAX_VOTOS = SORTED[0][1];
+
+/* ─── BUILD TABLE ─── */
+const tbody = document.getElementById('table-body');
+
+function buildTable(rows) {
+  tbody.innerHTML = '';
+  rows.forEach(([mun, v], idx) => {
+    const rank = SORTED.findIndex(([m]) => m === mun) + 1;
+    let badgeClass = 'rank-n';
+    if (rank === 1) badgeClass = 'rank-1';
+    else if (rank === 2) badgeClass = 'rank-2';
+    else if (rank === 3) badgeClass = 'rank-3';
+
+    const pct = ((v / TOTAL_VOTOS) * 100).toFixed(2);
+    const barW = ((v / MAX_VOTOS) * 100).toFixed(1);
+
+    tbody.innerHTML += `
+      <tr>
+        <td><span class="rank-badge ${badgeClass}">${rank}</span></td>
+        <td style="font-weight:500">${mun}</td>
+        <td>
+          <div class="vote-bar">
+            <div class="mini-bar"><div class="mini-bar-fill" style="width:${barW}%"></div></div>
+            <span class="vote-num">${v.toLocaleString('pt-BR')}</span>
+          </div>
+        </td>
+        <td style="text-align:right; color:var(--text-muted)">${pct}%</td>
+      </tr>`;
+  });
+}
+
+buildTable(SORTED);
+
+function filtrarTabela() {
+  const q = document.getElementById('filter-input').value.toUpperCase().trim();
+  const filtered = q ? SORTED.filter(([m]) => m.includes(q)) : SORTED;
+  buildTable(filtered);
+}
+
+/* ─── SEARCH ─── */
+const TOP_SUGGESTS = ['TERESINA','PICOS','PIRIPIRI','PARNAÍBA','CAMPO MAIOR','FLORIANO'];
+
+const suggestsEl = document.getElementById('suggests');
+TOP_SUGGESTS.forEach(m => {
+  const chip = document.createElement('span');
+  chip.className = 'suggest-chip';
+  chip.textContent = m;
+  chip.onclick = () => {
+    document.getElementById('search-input').value = m;
+    pesquisar();
+  };
+  suggestsEl.appendChild(chip);
+});
+
+function pesquisar() {
+  const q = document.getElementById('search-input').value.toUpperCase().trim();
+  const box = document.getElementById('result-box');
+  const content = document.getElementById('result-content');
+  box.style.display = 'block';
+
+  if (!q) { content.innerHTML = '<p class="no-result">Digite o nome de um município.</p>'; return; }
+
+  // exact or partial match
+  const matches = SORTED.filter(([m]) => m.includes(q));
+
+  if (matches.length === 0) {
+    content.innerHTML = `<p class="no-result">Nenhum município encontrado com "${q}". Verifique a grafia.</p>`;
+    return;
+  }
+
+  if (matches.length > 1 && !SORTED.find(([m]) => m === q)) {
+    // show list of matches
+    content.innerHTML = `<h3>Municípios encontrados</h3><div class="suggest-list">` +
+      matches.map(([m]) => `<span class="suggest-chip" onclick="selecionarMun('${m}')">${m}</span>`).join('') +
+      `</div>`;
+    return;
+  }
+
+  const [mun, votos] = matches[0];
+  selecionarMun(mun);
+}
+
+function selecionarMun(mun) {
+  const box = document.getElementById('result-box');
+  const content = document.getElementById('result-content');
+  box.style.display = 'block';
+
+  const votos = ALL_MUN[mun];
+  if (votos === undefined) {
+    content.innerHTML = `<p class="no-result">Município não encontrado: "${mun}".</p>`;
+    return;
+  }
+
+  const rank = SORTED.findIndex(([m]) => m === mun) + 1;
+  const pct = ((votos / TOTAL_VOTOS) * 100).toFixed(2);
+  const barW = ((votos / MAX_VOTOS) * 100).toFixed(1);
+  const totalMun = SORTED.length;
+
+  let rankLabel = '', rankColor = 'var(--primary)';
+  if (rank <= 3)       { rankLabel = '🏆 Top 3'; rankColor = 'var(--accent)'; }
+  else if (rank <= 10) { rankLabel = '⭐ Top 10'; rankColor = 'var(--green)'; }
+  else if (rank <= 30) { rankLabel = '📈 Top 30'; rankColor = 'var(--purple)'; }
+  else if (rank > totalMun - 20) { rankLabel = '📉 Base'; rankColor = 'var(--red)'; }
+  else                 { rankLabel = `#${rank}`; }
+
+  content.innerHTML = `
+    <h3>📍 ${mun}</h3>
+    <div class="result-grid">
+      <div class="result-metric">
+        <div class="val">${votos.toLocaleString('pt-BR')}</div>
+        <div class="lbl">Votos obtidos</div>
+      </div>
+      <div class="result-metric" style="border-color:var(--accent)">
+        <div class="val">${pct}%</div>
+        <div class="lbl">% do total geral</div>
+      </div>
+      <div class="result-metric" style="border-color:${rankColor}">
+        <div class="val" style="color:${rankColor}">${rankLabel}</div>
+        <div class="lbl">Posição no ranking (#${rank} de ${totalMun})</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <div style="font-size:.78rem; color:var(--text-muted); margin-bottom:6px;">Participação no total de votos</div>
+      <div class="bar-fill"><div class="bar-fill-inner" style="width:${barW}%"></div></div>
+      <div style="font-size:.72rem; color:var(--text-muted); margin-top:4px;">
+        ${barW}% em relação ao município líder (Teresina · 10.916 votos)
+      </div>
+    </div>`;
+
+  document.getElementById('search-input').value = mun;
+}
+
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') pesquisar();
+});
+
+/* ─── CHARTS ─── */
+const top10   = SORTED.slice(0, 10);
+const bot10   = SORTED.slice(-10).reverse();
+
+const chartDefaults = {
+  indexAxis: 'y',
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: ctx => ` ${ctx.raw.toLocaleString('pt-BR')} votos`
+      }
+    }
+  },
+  scales: {
+    x: {
+      grid: { color: 'rgba(51,65,85,.6)' },
+      ticks: { color: '#94a3b8', font: { size: 11 } }
+    },
+    y: {
+      grid: { display: false },
+      ticks: { color: '#cbd5e1', font: { size: 11 } }
+    }
+  }
+};
+
+// Top 10
+new Chart(document.getElementById('chart-top10'), {
+  type: 'bar',
+  data: {
+    labels: top10.map(([m]) => m.length > 20 ? m.substring(0,18)+'…' : m),
+    datasets: [{
+      data: top10.map(([,v]) => v),
+      backgroundColor: [
+        'rgba(245,158,11,.85)', 'rgba(26,86,219,.8)', 'rgba(16,185,129,.8)',
+        'rgba(139,92,246,.8)',  'rgba(239,68,68,.8)',  'rgba(6,182,212,.8)',
+        'rgba(249,115,22,.8)',  'rgba(20,184,166,.8)', 'rgba(236,72,153,.8)',
+        'rgba(132,204,22,.8)'
+      ],
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  },
+  options: chartDefaults
+});
+
+// Bottom 10
+new Chart(document.getElementById('chart-bottom10'), {
+  type: 'bar',
+  data: {
+    labels: bot10.map(([m]) => m.length > 22 ? m.substring(0,20)+'…' : m),
+    datasets: [{
+      data: bot10.map(([,v]) => v),
+      backgroundColor: 'rgba(239,68,68,.7)',
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    ...chartDefaults,
+    scales: {
+      ...chartDefaults.scales,
+      x: { ...chartDefaults.scales.x, max: 5 }
+    }
+  }
+});
+
+// Donut — faixas
+const faixas = { '5.000+': 0, '1.000–4.999': 0, '100–999': 0, '10–99': 0, '1–9': 0 };
+SORTED.forEach(([, v]) => {
+  if (v >= 5000)       faixas['5.000+'] += v;
+  else if (v >= 1000)  faixas['1.000–4.999'] += v;
+  else if (v >= 100)   faixas['100–999'] += v;
+  else if (v >= 10)    faixas['10–99'] += v;
+  else                 faixas['1–9'] += v;
+});
+
+new Chart(document.getElementById('chart-donut'), {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(faixas),
+    datasets: [{
+      data: Object.values(faixas),
+      backgroundColor: [
+        'rgba(245,158,11,.85)',
+        'rgba(26,86,219,.8)',
+        'rgba(16,185,129,.8)',
+        'rgba(139,92,246,.8)',
+        'rgba(239,68,68,.75)'
+      ],
+      borderColor: '#1e293b',
+      borderWidth: 3,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { color: '#cbd5e1', font: { size: 12 }, padding: 16, usePointStyle: true }
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const val = ctx.raw;
+            const pct = ((val / TOTAL_VOTOS) * 100).toFixed(1);
+            return ` ${val.toLocaleString('pt-BR')} votos (${pct}%)`;
+          }
+        }
+      }
+    }
+  }
+});
+
+/* ══════════════════════════════════════════
+   PREDICTIVE ANALYSIS LOGIC
+══════════════════════════════════════════ */
+
+const WILSON_DATA = {"LUZILÂNDIA":{"severo":8,"wilson":27},"CURRAIS":{"severo":13,"wilson":38},"SANTANA DO PIAUÍ":{"severo":1007,"wilson":1},"LANDRI SALES":{"severo":2,"wilson":1},"BARRA D ALCÂNTARA":{"severo":11,"wilson":8},"COLÔNIA DO PIAUÍ":{"severo":4,"wilson":0},"SÃO GONÇALO DO PIAUÍ":{"severo":12,"wilson":1044},"SANTA CRUZ DO PIAUÍ":{"severo":31,"wilson":1},"SÃO JOÃO DA VARJOTA":{"severo":7,"wilson":0},"HUGO NAPOLEÃO":{"severo":9,"wilson":22},"MORRO CABEÇA NO TEMPO":{"severo":165,"wilson":1},"LAGOA DO BARRO DO PIAUÍ":{"severo":1,"wilson":0},"CAJAZEIRAS DO PIAUÍ":{"severo":2,"wilson":2},"ANGICAL DO PIAUÍ":{"severo":3,"wilson":78},"FRANCISCO SANTOS":{"severo":18,"wilson":1},"MONTE ALEGRE DO PIAUÍ":{"severo":3,"wilson":0},"ITAUEIRA":{"severo":1862,"wilson":0},"ANTÔNIO ALMEIDA":{"severo":0,"wilson":634},"JOAQUIM PIRES":{"severo":13,"wilson":4},"CAMPO LARGO DO PIAUÍ":{"severo":6,"wilson":0},"PAQUETÁ":{"severo":569,"wilson":0},"CARAÚBAS DO PIAUÍ":{"severo":2,"wilson":10},"NOVA SANTA RITA":{"severo":4,"wilson":6},"MORRO DO CHAPÉU DO PIAUÍ":{"severo":0,"wilson":5},"SEBASTIÃO LEAL":{"severo":2,"wilson":3},"BAIXA GRANDE DO RIBEIRO":{"severo":1446,"wilson":1},"PORTO":{"severo":37,"wilson":3},"ISAÍAS COELHO":{"severo":9,"wilson":1},"SÃO JOÃO DO ARRAIAL":{"severo":1,"wilson":21},"FLORIANO":{"severo":72,"wilson":109},"PAULISTANA":{"severo":157,"wilson":3},"JÚLIO BORGES":{"severo":798,"wilson":0},"PIRIPIRI":{"severo":409,"wilson":559},"CRISTINO CASTRO":{"severo":209,"wilson":4},"ILHA GRANDE":{"severo":3,"wilson":125},"FRANCINÓPOLIS":{"severo":711,"wilson":523},"LUIS CORREIA":{"severo":83,"wilson":45},"GUADALUPE":{"severo":5,"wilson":400},"TANQUE DO PIAUÍ":{"severo":96,"wilson":3},"FRONTEIRAS":{"severo":9,"wilson":0},"DEMERVAL LOBÃO":{"severo":1590,"wilson":167},"ELESBÃO VELOSO":{"severo":31,"wilson":13},"CALDEIRÃO GRANDE DO PIAUÍ":{"severo":16,"wilson":0},"PARNAÍBA":{"severo":179,"wilson":525},"CAPITÃO GERVÁSIO OLIVEIRA":{"severo":1,"wilson":0},"NOSSA SENHORA DOS REMÉDIOS":{"severo":6,"wilson":9},"MONSENHOR GIL":{"severo":60,"wilson":927},"JOCA MARQUES":{"severo":4,"wilson":3},"GUARIBAS":{"severo":0,"wilson":638},"MARCOLÂNDIA":{"severo":322,"wilson":0},"PRATA DO PIAUÍ":{"severo":3,"wilson":164},"COLÔNIA DO GURGUÉIA":{"severo":6,"wilson":1},"SÃO JOSÉ DO PEIXE":{"severo":1,"wilson":0},"BARRAS":{"severo":687,"wilson":48},"IPIRANGA DO PIAUÍ":{"severo":386,"wilson":0},"ASSUNÇÃO DO PIAUÍ":{"severo":10,"wilson":1},"LAGOA DO PIAUÍ":{"severo":257,"wilson":713},"GILBUÊS":{"severo":2,"wilson":2},"MASSAPÊ DO PIAUÍ":{"severo":1777,"wilson":1},"BONFIM DO PIAUÍ":{"severo":0,"wilson":418},"SÃO JOSÉ DO PIAUÍ":{"severo":1874,"wilson":0},"TAMBORIL DO PIAUÍ":{"severo":131,"wilson":0},"PICOS":{"severo":5881,"wilson":5},"BOQUEIRÃO DO PIAUÍ":{"severo":3,"wilson":3},"CONCEIÇÃO DO CANINDÉ":{"severo":589,"wilson":257},"REGENERAÇÃO":{"severo":15,"wilson":733},"LAGOINHA DO PIAUÍ":{"severo":3,"wilson":97},"SANTO ANTÔNIO DE LISBOA":{"severo":366,"wilson":1},"ALTO LONGÁ":{"severo":71,"wilson":883},"NOSSA SENHORA DE NAZARÉ":{"severo":7,"wilson":6},"CANAVIEIRA":{"severo":1,"wilson":0},"SÃO JOÃO DA FRONTEIRA":{"severo":1,"wilson":279},"NAZARÉ DO PIAUÍ":{"severo":375,"wilson":10},"PATOS DO PIAUÍ":{"severo":267,"wilson":0},"SÃO JULIÃO":{"severo":1222,"wilson":0},"LAGOA ALEGRE":{"severo":24,"wilson":6},"CORONEL JOSÉ DIAS":{"severo":0,"wilson":97},"VALENÇA DO PIAUÍ":{"severo":247,"wilson":148},"FLORESTA DO PIAUÍ":{"severo":6,"wilson":0},"BREJO DO PIAUÍ":{"severo":10,"wilson":0},"SOCORRO DO PIAUÍ":{"severo":0,"wilson":1},"OEIRAS":{"severo":45,"wilson":3},"PARNAGUÁ":{"severo":11,"wilson":0},"SÃO MIGUEL DO FIDALGO":{"severo":117,"wilson":1},"QUEIMADA NOVA":{"severo":2,"wilson":0},"ELISEU MARTINS":{"severo":3,"wilson":0},"PEDRO II":{"severo":46,"wilson":8969},"CAMPINAS DO PIAUÍ":{"severo":10,"wilson":5},"BATALHA":{"severo":19,"wilson":1055},"JOSÉ DE FREITAS":{"severo":895,"wilson":36},"GEMINIANO":{"severo":200,"wilson":1},"DIRCEU ARCOVERDE":{"severo":0,"wilson":2098},"PAVUSSU":{"severo":5,"wilson":0},"FLORES DO PIAUÍ":{"severo":12,"wilson":0},"VÁRZEA GRANDE":{"severo":302,"wilson":10},"MARCOS PARENTE":{"severo":33,"wilson":2},"MATIAS OLÍMPIO":{"severo":3,"wilson":0},"PADRE MARCOS":{"severo":39,"wilson":0},"CRISTALÂNDIA DO PIAUÍ":{"severo":20,"wilson":0},"NOVO SANTO ANTÔNIO":{"severo":6,"wilson":4},"BOA HORA":{"severo":9,"wilson":70},"CAMPO GRANDE DO PIAUÍ":{"severo":96,"wilson":1},"CURRALINHOS":{"severo":10,"wilson":17},"SÃO RAIMUNDO NONATO":{"severo":29,"wilson":74},"MIGUEL ALVES":{"severo":141,"wilson":3036},"MANOEL EMÍDIO":{"severo":196,"wilson":0},"SÃO LUIS DO PIAUÍ":{"severo":207,"wilson":1},"SÃO MIGUEL DA BAIXA GRANDE":{"severo":1,"wilson":10},"BOM PRINCÍPIO DO PIAUÍ":{"severo":2,"wilson":0},"SANTO ANTÔNIO DOS MILAGRES":{"severo":0,"wilson":12},"ESPERANTINA":{"severo":16,"wilson":1095},"SANTO INÁCIO DO PIAUÍ":{"severo":4,"wilson":0},"SÃO JOSÉ DO DIVINO":{"severo":3,"wilson":65},"PALMEIRA DO PIAUÍ":{"severo":2,"wilson":0},"BURITI DOS LOPES":{"severo":2,"wilson":2},"CAXINGÓ":{"severo":7,"wilson":0},"AVELINO LOPES":{"severo":512,"wilson":0},"COCAL DE TELHA":{"severo":29,"wilson":127},"ALTOS":{"severo":88,"wilson":314},"SIMPLÍCIO MENDES":{"severo":305,"wilson":2},"NAZÁRIA":{"severo":277,"wilson":4},"PEDRO LAURENTINO":{"severo":3,"wilson":0},"RIBEIRO GONÇALVES":{"severo":14,"wilson":0},"MONSENHOR HIPÓLITO":{"severo":578,"wilson":2},"JARDIM DO MULATO":{"severo":7,"wilson":203},"COCAL":{"severo":34,"wilson":3},"PAES LANDIM":{"severo":234,"wilson":1},"AROEIRAS DO ITAIM":{"severo":42,"wilson":0},"WALL FERRAZ":{"severo":23,"wilson":0},"CARACOL":{"severo":5,"wilson":1992},"VÁRZEA BRANCA":{"severo":1,"wilson":311},"SÃO FÉLIX DO PIAUÍ":{"severo":10,"wilson":965},"SÃO LOURENÇO DO PIAUÍ":{"severo":1,"wilson":52},"PASSAGEM FRANCA DO PIAUÍ":{"severo":2,"wilson":108},"BERTOLÍNIA":{"severo":9,"wilson":5},"BARRO DURO":{"severo":2,"wilson":178},"BETÂNIA DO PIAUÍ":{"severo":8,"wilson":0},"CAPITÃO DE CAMPOS":{"severo":4,"wilson":1670},"PIRACURUCA":{"severo":202,"wilson":4750},"JUAZEIRO DO PIAUÍ":{"severo":5,"wilson":299},"DOM INOCÊNCIO":{"severo":4,"wilson":18},"ÁGUA BRANCA":{"severo":52,"wilson":738},"CARIDADE DO PIAUÍ":{"severo":18,"wilson":0},"PORTO ALEGRE DO PIAUÍ":{"severo":27,"wilson":1},"MIGUEL LEÃO":{"severo":24,"wilson":4},"LAGOA DO SÍTIO":{"severo":1676,"wilson":305},"CAJUEIRO DA PRAIA":{"severo":525,"wilson":148},"RIACHO FRIO":{"severo":5,"wilson":0},"SÃO MIGUEL DO TAPUIO":{"severo":19,"wilson":33},"REDENÇÃO DO GURGUÉIA":{"severo":279,"wilson":2},"AMARANTE":{"severo":20,"wilson":180},"JERUMENHA":{"severo":1,"wilson":36},"AGRICOLÂNDIA":{"severo":6,"wilson":48},"ALAGOINHA DO PIAUÍ":{"severo":645,"wilson":1},"PIO IX":{"severo":342,"wilson":9},"CABECEIRAS DO PIAUÍ":{"severo":16,"wilson":63},"PAJÉU DO PIAUÍ":{"severo":3,"wilson":0},"URUÇUÍ":{"severo":30,"wilson":16},"SÃO JOÃO DO PIAUÍ":{"severo":7,"wilson":1},"ANÍSIO DE ABREU":{"severo":0,"wilson":208},"PIMENTEIRAS":{"severo":384,"wilson":10},"SIGEFREDO PACHECO":{"severo":668,"wilson":10},"OLHO D ÁGUA DO PIAUÍ":{"severo":0,"wilson":701},"PALMEIRAIS":{"severo":131,"wilson":43},"CAMPO MAIOR":{"severo":337,"wilson":54},"PAU D ARCO DO PIAUÍ":{"severo":8,"wilson":4},"JUREMA":{"severo":0,"wilson":1042},"SANTA CRUZ DOS MILAGRES":{"severo":3,"wilson":20},"SIMÕES":{"severo":79,"wilson":0},"CORRENTE":{"severo":5,"wilson":3},"COCAL DOS ALVES":{"severo":1,"wilson":2},"BOCAINA":{"severo":149,"wilson":0},"BELÉM DO PIAUÍ":{"severo":1002,"wilson":0},"SÃO JOÃO DA SERRA":{"severo":3,"wilson":27},"ACAUÃ":{"severo":3,"wilson":0},"AROAZES":{"severo":226,"wilson":3},"SÃO FRANCISCO DE ASSIS DO PIAUÍ":{"severo":98,"wilson":1},"MURICI DOS PORTELAS":{"severo":1,"wilson":0},"INHUMA":{"severo":885,"wilson":3},"BURITI DOS MONTES":{"severo":16,"wilson":5},"JOÃO COSTA":{"severo":2,"wilson":0},"NOVO ORIENTE DO PIAUÍ":{"severo":24,"wilson":111},"RIBEIRA DO PIAUÍ":{"severo":1,"wilson":0},"BOM JESUS":{"severo":18,"wilson":76},"ARRAIAL":{"severo":5,"wilson":11},"BRASILEIRA":{"severo":7,"wilson":635},"RIO GRANDE DO PIAUÍ":{"severo":238,"wilson":409},"ALVORADA DO GURGUÉIA":{"severo":5,"wilson":0},"ITAINÓPOLIS":{"severo":356,"wilson":5},"BARREIRAS DO PIAUÍ":{"severo":4,"wilson":0},"LAGOA DE SÃO FRANCISCO":{"severo":1,"wilson":472},"SÃO JOÃO DA CANABRAVA":{"severo":2257,"wilson":0},"DOMINGOS MOURÃO":{"severo":4,"wilson":1423},"ALEGRETE DO PIAUÍ":{"severo":5,"wilson":0},"FARTURA DO PIAUÍ":{"severo":0,"wilson":411},"VERA MENDES":{"severo":11,"wilson":0},"BENEDITINOS":{"severo":187,"wilson":18},"JACOBINA DO PIAUÍ":{"severo":4,"wilson":0},"SUSSUAPARA":{"severo":1560,"wilson":2},"SANTA FILOMENA":{"severo":185,"wilson":0},"JATOBÁ DO PIAUÍ":{"severo":6,"wilson":6},"DOM EXPEDITO LOPES":{"severo":1202,"wilson":1},"FRANCISCO AYRES":{"severo":1,"wilson":122},"TERESINA":{"severo":10916,"wilson":2371},"UNIÃO":{"severo":686,"wilson":99},"CURIMATÁ":{"severo":166,"wilson":2},"CANTO DO BURITI":{"severo":1017,"wilson":3},"FRANCISCO MACEDO":{"severo":5,"wilson":0},"SÃO PEDRO DO PIAUÍ":{"severo":318,"wilson":218},"JAICÓS":{"severo":108,"wilson":84},"CASTELO DO PIAUÍ":{"severo":20,"wilson":599},"SANTA LUZ":{"severo":1,"wilson":10},"MILTON BRANDÃO":{"severo":8,"wilson":1994},"VILA NOVA DO PIAUÍ":{"severo":3,"wilson":0},"SÃO FRANCISCO DO PIAUÍ":{"severo":5,"wilson":1},"SÃO BRAZ DO PIAUÍ":{"severo":0,"wilson":30},"BELA VISTA DO PIAUÍ":{"severo":4,"wilson":0},"CURRAL NOVO DO PIAUÍ":{"severo":2962,"wilson":0},"COIVARAS":{"severo":15,"wilson":177}};
+
+// Separa municípios onde Wilson > Severo
+const WILSON_GANHOU = {};
+const SEVERO_VENCIA = {};
+
+Object.entries(WILSON_DATA).forEach(([mun, d]) => {
+  if (d.wilson > d.severo) WILSON_GANHOU[mun] = d;
+  else SEVERO_VENCIA[mun] = d;
+});
+
+// Estado da simulação
+const convState   = {};  // mun -> % conversão
+const growthState = {};  // mun -> % variação
+
+// Inicializa estados
+Object.keys(WILSON_GANHOU).forEach(m => { convState[m] = 0; });
+Object.keys(SEVERO_VENCIA).forEach(m => { growthState[m] = 0; });
+// Também municípios de Severo não em WILSON_DATA
+Object.keys(ALL_MUN).forEach(m => {
+  if (!(m in growthState) && !(m in convState)) growthState[m] = 0;
+});
+
+const BASE_TOTAL = 59133;
+
+// ── Atualiza estimativas ──
+function calcularTotal() {
+  let convGain   = 0;
+  let growthDiff = 0;
+
+  Object.entries(convState).forEach(([mun, pct]) => {
+    const wilson = WILSON_GANHOU[mun]?.wilson || 0;
+    convGain += Math.round(wilson * pct / 100);
+  });
+
+  // growthState cobre todos os municípios de Severo (SEVERO_VENCIA + os que só Severo tem)
+  Object.entries(growthState).forEach(([mun, pct]) => {
+    const sevBase = WILSON_DATA[mun]?.severo ?? ALL_MUN[mun] ?? 0;
+    const delta = Math.round(sevBase * pct / 100);
+    growthDiff += delta;
+  });
+
+  const total = BASE_TOTAL + convGain + growthDiff;
+
+  // Atualiza sticky estimator
+  document.getElementById('est-total').textContent = total.toLocaleString('pt-BR');
+  const delta = total - BASE_TOTAL;
+  const deltaEl = document.getElementById('est-delta');
+  deltaEl.textContent = (delta >= 0 ? '+' : '') + delta.toLocaleString('pt-BR') + ' votos';
+  deltaEl.className = 'est-delta ' + (delta >= 0 ? 'pos' : 'neg');
+  document.getElementById('est-breakdown').textContent =
+    `conversão: +${convGain.toLocaleString('pt-BR')} · variação: ${growthDiff >= 0 ? '+' : ''}${growthDiff.toLocaleString('pt-BR')}`;
+
+  // Atualiza sub text
+  const pctVar = ((total / BASE_TOTAL - 1) * 100).toFixed(1);
+  document.getElementById('est-sub-text').textContent =
+    `${pctVar > 0 ? '+' : ''}${pctVar}% em relação à base`;
+
+  // Atualiza summary
+  document.getElementById('summary-total').textContent = total.toLocaleString('pt-BR');
+  document.getElementById('sd-total').textContent      = total.toLocaleString('pt-BR');
+  document.getElementById('sd-conv').textContent       = (convGain >= 0 ? '+' : '') + convGain.toLocaleString('pt-BR');
+  document.getElementById('sd-growth').textContent     = (growthDiff >= 0 ? '+' : '') + growthDiff.toLocaleString('pt-BR');
+  document.getElementById('summary-sub').textContent   =
+    delta === 0 ? 'nenhum ajuste aplicado' :
+    `${delta >= 0 ? '+' : ''}${delta.toLocaleString('pt-BR')} votos em relação ao resultado de 2022`;
+  document.getElementById('diff-arrow').textContent = delta > 0 ? '📈' : delta < 0 ? '📉' : '➡️';
+  document.getElementById('sd-conv').style.color   = convGain >= 0 ? '#4ade80' : '#f87171';
+  document.getElementById('sd-growth').style.color = growthDiff >= 0 ? '#c4b5fd' : '#f87171';
+
+  return { total, convGain, growthDiff };
+}
+
+// ── Tabela de Conversão (Wilson ganhou) ──
+const wilsonSorted = Object.entries(WILSON_GANHOU).sort((a, b) => b[1].wilson - a[1].wilson);
+
+function buildConvTable(rows) {
+  const tbody = document.getElementById('conv-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(([mun, d], idx) => {
+    const rank = wilsonSorted.findIndex(([m]) => m === mun) + 1;
+    const diff = d.wilson - d.severo;
+    const pct  = convState[mun] ?? 0;
+    const gain = Math.round(d.wilson * pct / 100);
+    tbody.innerHTML += `
+      <tr>
+        <td style="color:var(--text-muted);font-size:.75rem;">${rank}</td>
+        <td style="font-weight:500">${mun}</td>
+        <td style="color:#fbbf24;font-weight:600">${d.wilson.toLocaleString('pt-BR')}</td>
+        <td style="color:#60a5fa">${d.severo.toLocaleString('pt-BR')}</td>
+        <td style="color:#f87171">-${diff.toLocaleString('pt-BR')}</td>
+        <td>
+          <div class="slider-cell">
+            <input type="range" min="0" max="100" value="${pct}"
+              class="pct-slider" data-mun="${mun}"
+              oninput="setConv('${mun}',+this.value,this)" />
+            <span class="pct-display" id="cd-${rank}">${pct}%</span>
+          </div>
+        </td>
+        <td class="gain-cell" id="cg-${rank}">+${gain.toLocaleString('pt-BR')}</td>
+      </tr>`;
+  });
+}
+
+buildConvTable(wilsonSorted);
+
+function setConv(mun, pct, slider) {
+  convState[mun] = pct;
+  // atualiza display na mesma linha
+  const row = slider.closest('tr');
+  const display = row.querySelector('.pct-display');
+  const gainCell = row.querySelector('.gain-cell');
+  display.textContent = pct + '%';
+  const gain = Math.round((WILSON_GANHOU[mun]?.wilson || 0) * pct / 100);
+  gainCell.textContent = '+' + gain.toLocaleString('pt-BR');
+  calcularTotal();
+}
+
+function filtrarConv() {
+  const q = document.getElementById('conv-filter').value.toUpperCase().trim();
+  const filtered = q ? wilsonSorted.filter(([m]) => m.includes(q)) : wilsonSorted;
+  buildConvTable(filtered);
+}
+
+function aplicarGlobalConv(val) {
+  val = +val;
+  document.getElementById('global-conv-val').textContent = val + '%';
+  document.getElementById('global-conv-slider').value = val;
+  Object.keys(convState).forEach(m => { convState[m] = val; });
+  const q = document.getElementById('conv-filter').value.toUpperCase().trim();
+  buildConvTable(q ? wilsonSorted.filter(([m]) => m.includes(q)) : wilsonSorted);
+  calcularTotal();
+}
+
+// ── Tabela de Crescimento/Redução (Severo vencia ou só Severo) ──
+// Inclui todos os municípios onde Severo tinha votos e Wilson não superava
+const allGrowthMuns = Object.entries(growthState)
+  .filter(([m]) => (ALL_MUN[m] || WILSON_DATA[m]?.severo) > 0)
+  .map(([m]) => {
+    const sv = WILSON_DATA[m]?.severo ?? ALL_MUN[m] ?? 0;
+    const wv = WILSON_DATA[m]?.wilson ?? 0;
+    return [m, { severo: sv, wilson: wv }];
+  })
+  .sort((a, b) => b[1].severo - a[1].severo);
+
+function buildGrowthTable(rows) {
+  const tbody = document.getElementById('growth-tbody');
+  tbody.innerHTML = '';
+  rows.forEach(([mun, d], idx) => {
+    const pct  = growthState[mun] ?? 0;
+    const base = d.severo;
+    const est  = Math.round(base * (1 + pct / 100));
+    const diff = est - base;
+    const color = pct > 0 ? '#4ade80' : pct < 0 ? '#f87171' : 'var(--text-muted)';
+    tbody.innerHTML += `
+      <tr>
+        <td style="color:var(--text-muted);font-size:.75rem;">${idx+1}</td>
+        <td style="font-weight:500">${mun}</td>
+        <td style="color:#60a5fa;font-weight:600">${base.toLocaleString('pt-BR')}</td>
+        <td style="color:var(--text-muted)">${d.wilson.toLocaleString('pt-BR')}</td>
+        <td>
+          <div class="slider-cell">
+            <input type="range" min="-100" max="200" value="${pct}"
+              class="growth-mun-slider" data-mun="${mun}"
+              oninput="setGrowth('${mun}',+this.value,this)" />
+            <span class="pct-display" id="gd-pct-${idx}" style="color:${color};min-width:50px">
+              ${pct > 0 ? '+' : ''}${pct}%
+            </span>
+          </div>
+        </td>
+        <td class="gain-cell ${diff < 0 ? 'neg' : ''}" id="gd-est-${idx}">
+          ${est.toLocaleString('pt-BR')} <span style="font-size:.72rem; opacity:.7">(${diff >= 0 ? '+' : ''}${diff.toLocaleString('pt-BR')})</span>
+        </td>
+      </tr>`;
+  });
+}
+
+buildGrowthTable(allGrowthMuns);
+
+function setGrowth(mun, pct, slider) {
+  growthState[mun] = pct;
+  const row   = slider.closest('tr');
+  const disp  = row.querySelector('.pct-display');
+  const est   = row.querySelector('.gain-cell');
+  const base  = WILSON_DATA[mun]?.severo ?? ALL_MUN[mun] ?? 0;
+  const estV  = Math.round(base * (1 + pct / 100));
+  const diff  = estV - base;
+  const color = pct > 0 ? '#4ade80' : pct < 0 ? '#f87171' : 'var(--text-muted)';
+  disp.textContent = (pct > 0 ? '+' : '') + pct + '%';
+  disp.style.color = color;
+  est.className = 'gain-cell' + (diff < 0 ? ' neg' : '');
+  est.innerHTML = `${estV.toLocaleString('pt-BR')} <span style="font-size:.72rem; opacity:.7">(${diff >= 0 ? '+' : ''}${diff.toLocaleString('pt-BR')})</span>`;
+  calcularTotal();
+}
+
+function filtrarGrowth() {
+  const q = document.getElementById('growth-filter').value.toUpperCase().trim();
+  const filtered = q ? allGrowthMuns.filter(([m]) => m.includes(q)) : allGrowthMuns;
+  buildGrowthTable(filtered);
+}
+
+function aplicarGlobalGrowth(val) {
+  val = +val;
+  document.getElementById('global-growth-val').textContent = (val > 0 ? '+' : '') + val + '%';
+  document.getElementById('global-growth-slider').value = val;
+  Object.keys(growthState).forEach(m => { growthState[m] = val; });
+  const q = document.getElementById('growth-filter').value.toUpperCase().trim();
+  buildGrowthTable(q ? allGrowthMuns.filter(([m]) => m.includes(q)) : allGrowthMuns);
+  calcularTotal();
+}
+
+function resetarTudo() {
+  Object.keys(convState).forEach(m => { convState[m] = 0; });
+  Object.keys(growthState).forEach(m => { growthState[m] = 0; });
+  document.getElementById('global-conv-slider').value   = 0;
+  document.getElementById('global-conv-val').textContent = '0%';
+  document.getElementById('global-growth-slider').value = 0;
+  document.getElementById('global-growth-val').textContent = '0%';
+  buildConvTable(wilsonSorted);
+  buildGrowthTable(allGrowthMuns);
+  calcularTotal();
+}
+
+calcularTotal();
+</script>
+</body>
+</html>
